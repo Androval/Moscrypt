@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block title %}View Session - Moscrypt{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h1>Session Details: {{ key_session.name }}</h1>
+        <div>
+            <a href="{{ url_for('list_sessions') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Sessions
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Session Information</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Created by:</strong> {{ key_session.creator.username }}</p>
+                <p><strong>Created at:</strong> {{ key_session.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                <p><strong>Status:</strong> 
+                    {% if key_session.is_active %}
+                    <span class="text-success"><i class="fas fa-check-circle"></i> Active</span>
+                    {% else %}
+                    <span class="text-danger"><i class="fas fa-times-circle"></i> Closed</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Participants</h2>
+            </div>
+            <div class="card-body">
+                {% if key_session.participants %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Joined At</th>
+                                    {% if key_session.creator_id == session['user_id'] and key_session.is_active %}
+                                    <th>Actions</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in key_session.participants %}
+                                <tr>
+                                    <td>{{ participant.user.username }}</td>
+                                    <td>{{ participant.user.role }}</td>
+                                    <td>{{ participant.joined_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    {% if key_session.creator_id == session['user_id'] and key_session.is_active %}
+                                    <td>
+                                        {% if participant.user_id != session['user_id'] %}
+                                        <form action="{{ url_for('remove_participant', session_id=key_session.id, user_id=participant.user_id) }}" method="post" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this participant?')">
+                                                <i class="fas fa-user-minus"></i> Remove
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No participants in this session.</p>
+                {% endif %}
+
+                {% if key_session.creator_id == session['user_id'] and key_session.is_active %}
+                    <div class="mt-4 pt-3 border-top">
+                        <h3 class="h5">Add Participant</h3>
+                        <form action="{{ url_for('add_participant', session_id=key_session.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="form-group">
+                                <label for="user_id" class="form-label">Select User:</label>
+                                <select id="user_id" name="user_id" class="form-select" required>
+                                    {% for user in available_users %}
+                                        <option value="{{ user.id }}">{{ user.username }} ({{ user.role }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">
+                                <i class="fas fa-user-plus"></i> Add Participant
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if key_session.is_active %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Messages</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('send_message', session_id=key_session.id) }}" method="post" class="mb-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="message" class="form-label">Send a message:</label>
+                        <textarea id="message" name="message" class="form-control" rows="3" placeholder="Type your message here..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+                
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages|sort(attribute='created_at', reverse=true) %}
+                    <div class="card mb-2">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                            <span><strong>{{ message.sender.username }}</strong></span>
+                            <small class="text-muted">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                        </div>
+                        <div class="card-body py-2">
+                            {{ message.content }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No messages in this session yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Shared Files</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('share_file', session_id=key_session.id) }}" method="post" enctype="multipart/form-data" class="mb-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="file" class="form-label">Select File:</label>
+                        <input type="file" id="file" name="file" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">
+                        <i class="fas fa-file-upload"></i> Share File
+                    </button>
+                </form>
+                
+                {% if key_session.files %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Uploaded By</th>
+                                <th>Upload Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in key_session.files|sort(attribute='uploaded_at', reverse=true) %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ file.uploader.username }}</td>
+                                <td>{{ file.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    <a href="{{ url_for('download_file', session_id=key_session.id, file_id=file.id) }}" 
+                                      class="btn btn-success btn-sm">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No files shared in this session yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

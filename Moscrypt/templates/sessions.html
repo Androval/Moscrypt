@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block title %}Key Sessions - Secure File Vault{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h1>Key Sessions</h1>
+        <div>
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-info mr-2">
+                <i class="fas fa-shield-alt"></i> Admin Dashboard
+            </a>
+            {% endif %}
+            <a href="{{ url_for('create_session') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Session
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Sessions You Created</h2>
+            </div>
+            <div class="card-body">
+                {% if created_sessions %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Session Name</th>
+                                    <th>Created At</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in created_sessions %}
+                                <tr>
+                                    <td>{{ session.name }}</td>
+                                    <td>{{ session.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        {% if session.is_active %}
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle"></i> Active
+                                        </span>
+                                        {% else %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-times-circle"></i> Closed
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('view_session', session_id=session.id) }}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </a>
+                                        {% if session.is_active %}
+                                        <form action="{{ url_for('close_session', session_id=session.id) }}" method="post" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to close this session?')">
+                                                <i class="fas fa-lock"></i> Close Session
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">You haven't created any sessions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="h4 mb-0">Sessions You're Participating In</h2>
+            </div>
+            <div class="card-body">
+                {% if participating %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Session Name</th>
+                                    <th>Created By</th>
+                                    <th>Joined At</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in participating %}
+                                <tr>
+                                    <td>{{ participant.session.name }}</td>
+                                    <td>{{ participant.session.creator.username }}</td>
+                                    <td>{{ participant.joined_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        {% if participant.session.is_active %}
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle"></i> Active
+                                        </span>
+                                        {% else %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-times-circle"></i> Closed
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('view_session', session_id=participant.session.id) }}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">You're not participating in any sessions.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Key Management - Secure File Vault{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>UNUSED Key Management System</h1>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <h2>Add New Key</h2>
+            <form action="/add_key" method="post" class="mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label class="form-label" for="key_name">Key Name:</label>
+                    <input type="text" id="key_name" name="key_name" class="form-control" placeholder="Key Name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="key_value">Key Value:</label>
+                    <input type="text" id="key_value" name="key_value" class="form-control" placeholder="Key Value" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Key</button>
+            </form>
+        </div>
+
+        <div>
+            <h2>Stored Keys</h2>
+            {% if keys %}
+                <div class="file-list">
+                    {% for key in keys %}
+                    <div class="file-item d-flex justify-content-between align-items-center">
+                        <div class="file-name">
+                            <i class="fas fa-key"></i> {{ key.key_name }}
+                        </div>
+                        <div class="file-actions">
+                            <a href="{{ url_for('view_key', key_id=key.id) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No keys stored yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

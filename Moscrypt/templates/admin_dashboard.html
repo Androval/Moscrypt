@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - Secure File Vault{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Admin Dashboard</h1>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <a href="{{ url_for('admin_vault') }}" class="btn btn-primary btn-lg d-block mb-2">
+                <i class="fas fa-lock"></i> Access Admin Vault
+            </a>
+            
+            <a href="{{ url_for('vault') }}" class="btn btn-success btn-lg d-block mb-2">
+                <i class="fas fa-folder-open"></i> Access User Vault
+            </a>
+            
+            <a href="{{ url_for('manage_users') }}" class="btn btn-warning btn-lg d-block mb-2">
+                <i class="fas fa-users"></i> Manage Users & Keys
+            </a>
+            
+            <a href="{{ url_for('list_sessions') }}" class="btn btn-danger btn-lg d-block">
+                <i class="fas fa-key"></i> Key Sessions
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

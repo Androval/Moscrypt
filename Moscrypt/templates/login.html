@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - Secure File Vault{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Login</h1>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('login') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label class="form-label" for="username">Username:</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+</div>
+{% endblock %} 

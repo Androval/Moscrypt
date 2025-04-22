@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Vault - Secure File Vault{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>Admin Vault</h1>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <h2>Upload New File to Admin Vault</h2>
+            <form action="{{ url_for('admin_vault') }}" method="post" enctype="multipart/form-data" class="mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <input type="file" name="file" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload File</button>
+            </form>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h4 mb-0">Admin Vault Files</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if admin_files %}
+                            <div class="file-list">
+                                {% for file in admin_files %}
+                                <div class="file-item d-flex justify-content-between align-items-center">
+                                    <div class="file-name">
+                                        <i class="fas fa-file-alt"></i> {{ file }}
+                                    </div>
+                                    <div class="file-actions">
+                                        <a href="{{ url_for('admin_file', filename=file) }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No files in the admin vault yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h4 mb-0">User Vault Files</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if user_files %}
+                            <div class="file-list">
+                                {% for file in user_files %}
+                                <div class="file-item d-flex justify-content-between align-items-center">
+                                    <div class="file-name">
+                                        <i class="fas fa-file-alt"></i> {{ file }}
+                                    </div>
+                                    <div class="file-actions">
+                                        <a href="{{ url_for('uploaded_file', filename=file) }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No files in the user vault yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
